@@ -1,30 +1,42 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit3, Save, X, Lock } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Lock, LogOut, ExternalLink, LayoutDashboard } from 'lucide-react'
+import TabSite from '@/components/admin/TabSite'
+import TabHero from '@/components/admin/TabHero'
+import TabAbout from '@/components/admin/TabAbout'
+import TabGallery from '@/components/admin/TabGallery'
+import TabTestimonials from '@/components/admin/TabTestimonials'
+import TabContact from '@/components/admin/TabContact'
+import TabMenu from '@/components/admin/TabMenu'
 
-type MenuItem = {
-  id: string
-  name: string
-  nameIt: string
-  description: string
-  price: number
-  badge: string | null
-}
-
-type Category = {
-  id: string
-  name: string
-  nameIt: string
-  items: MenuItem[]
+type Content = {
+  site: { name: string; tagline: string; footerText: string }
+  hero: { backgroundUrl: string; badge: string; heading: string; subheading: string; cta1: string; cta2: string }
+  about: { badge: string; heading: string; text1: string; text2: string; imageUrl: string; yearsLabel: string; yearsText: string; cta: string }
+  features: { icon: string; title: string; desc: string }[]
+  cta: { backgroundUrl: string; badge: string; heading: string; text: string; cta: string }
+  testimonials: { id: string; name: string; text: string; rating: number }[]
+  gallery: { id: string; src: string; alt: string }[]
+  contact: { address: string; phone1: string; phone2: string; email1: string; email2: string; weekdays: string; weekends: string; mapUrl: string; footerAddress: string }
 }
 
 type MenuData = {
-  categories: Category[]
+  categories: { id: string; name: string; nameIt: string; items: { id: string; name: string; nameIt: string; description: string; price: number; badge: string | null }[] }[]
 }
 
-function LoginForm({ onLogin }: { onLogin: () => void }) {
-  const [password, setPassword] = useState('')
+const TABS = [
+  { id: 'site', label: 'საიტი' },
+  { id: 'hero', label: 'Hero' },
+  { id: 'about', label: 'About' },
+  { id: 'gallery', label: 'გალერეა' },
+  { id: 'menu', label: 'მენიუ' },
+  { id: 'testimonials', label: 'შეფასებები' },
+  { id: 'contact', label: 'კონტაქტი' },
+]
+
+function LoginForm({ onLogin }: { onLogin: (pw: string) => void }) {
+  const [pw, setPw] = useState('')
   const [error, setError] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
@@ -32,14 +44,10 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     const res = await fetch('/api/admin/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password: pw }),
     })
-    if (res.ok) {
-      sessionStorage.setItem('admin_auth', password)
-      onLogin()
-    } else {
-      setError(true)
-    }
+    if (res.ok) { sessionStorage.setItem('admin_pw', pw); onLogin(pw) }
+    else setError(true)
   }
 
   return (
@@ -53,230 +61,141 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
         <form onSubmit={submit} className="space-y-4">
           <input
             type="password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(false) }}
+            value={pw}
+            onChange={(e) => { setPw(e.target.value); setError(false) }}
             placeholder="პაროლი"
             className="input-field"
             autoFocus
           />
           {error && <p className="text-red-400 text-sm">არასწორი პაროლი</p>}
-          <button type="submit" className="btn-primary w-full text-center">
-            შესვლა
-          </button>
+          <button type="submit" className="btn-primary w-full text-center">შესვლა</button>
         </form>
       </div>
     </div>
   )
 }
 
-function ItemEditor({
-  item,
-  onSave,
-  onCancel,
-}: {
-  item: Partial<MenuItem>
-  onSave: (item: MenuItem) => void
-  onCancel: () => void
-}) {
-  const [form, setForm] = useState<Partial<MenuItem>>(item)
-
-  const handle = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const val = e.target.name === 'price' ? Number(e.target.value) : e.target.value
-    setForm((p) => ({ ...p, [e.target.name]: val }))
-  }
-
-  const save = () => {
-    if (!form.name || !form.price) return
-    onSave({
-      id: form.id || Date.now().toString(),
-      name: form.name!,
-      nameIt: form.nameIt || '',
-      description: form.description || '',
-      price: form.price!,
-      badge: form.badge || null,
-    })
-  }
-
-  return (
-    <div className="card-dark p-4 space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <input name="name" value={form.name || ''} onChange={handle} placeholder="სახელი (ქართ.)" className="input-field text-sm py-2" />
-        <input name="nameIt" value={form.nameIt || ''} onChange={handle} placeholder="Nome (italiano)" className="input-field text-sm py-2" />
-      </div>
-      <textarea name="description" value={form.description || ''} onChange={handle} placeholder="აღწერა" rows={2} className="input-field text-sm py-2 resize-none w-full" />
-      <div className="grid grid-cols-2 gap-3">
-        <input name="price" type="number" value={form.price || ''} onChange={handle} placeholder="ფასი (₾)" className="input-field text-sm py-2" />
-        <select name="badge" value={form.badge || ''} onChange={handle} className="input-field text-sm py-2 bg-dark-card">
-          <option value="">ბეიჯი არ არის</option>
-          <option value="popular">პოპულარული</option>
-          <option value="chef">შეფის რჩეული</option>
-        </select>
-      </div>
-      <div className="flex gap-2">
-        <button onClick={save} className="btn-primary text-xs py-2 px-4 flex items-center gap-2">
-          <Save size={14} /> შენახვა
-        </button>
-        <button onClick={onCancel} className="btn-outline text-xs py-2 px-4 flex items-center gap-2">
-          <X size={14} /> გაუქმება
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false)
+  const [pw, setPw] = useState<string | null>(null)
+  const [content, setContent] = useState<Content | null>(null)
   const [menuData, setMenuData] = useState<MenuData | null>(null)
-  const [editingItem, setEditingItem] = useState<{ catId: string; item: Partial<MenuItem> } | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState('')
+  const [activeTab, setActiveTab] = useState('site')
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('admin_auth')
+    const stored = sessionStorage.getItem('admin_pw')
     if (stored) {
-      fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: stored }),
-      }).then((r) => { if (r.ok) setAuthed(true) })
+      fetch('/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: stored }) })
+        .then((r) => { if (r.ok) setPw(stored) })
     }
   }, [])
 
   useEffect(() => {
-    if (authed) {
-      fetch('/api/menu').then((r) => r.json()).then(setMenuData)
-    }
-  }, [authed])
+    if (!pw) return
+    fetch('/api/content').then((r) => r.json()).then(setContent)
+    fetch('/api/menu').then((r) => r.json()).then(setMenuData)
+  }, [pw])
 
-  const saveMenu = async (data: MenuData) => {
-    setSaving(true)
-    setSaveMsg('')
+  const saveContent = useCallback(async (patch: Partial<Content>) => {
+    const updated = { ...content, ...patch } as Content
+    setContent(updated)
+    const res = await fetch('/api/content', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pw! },
+      body: JSON.stringify(updated),
+    })
+    if (!res.ok) throw new Error('save failed')
+  }, [content, pw])
+
+  const saveMenu = useCallback(async (categories: MenuData['categories']) => {
+    const updated = { ...menuData, categories } as MenuData
+    setMenuData(updated)
     const res = await fetch('/api/menu', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-password': sessionStorage.getItem('admin_auth') || '',
-      },
-      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pw! },
+      body: JSON.stringify(updated),
     })
-    setSaving(false)
-    setSaveMsg(res.ok ? 'შენახულია!' : 'შეცდომა!')
-    setTimeout(() => setSaveMsg(''), 3000)
-  }
+    if (!res.ok) throw new Error('save failed')
+  }, [menuData, pw])
 
-  const addItem = (catId: string, item: MenuItem) => {
-    if (!menuData) return
-    const updated = {
-      ...menuData,
-      categories: menuData.categories.map((c) =>
-        c.id === catId ? { ...c, items: editingItem?.item.id ? c.items.map((i) => i.id === item.id ? item : i) : [...c.items, item] } : c
-      ),
-    }
-    setMenuData(updated)
-    setEditingItem(null)
-    saveMenu(updated)
-  }
+  const logout = () => { sessionStorage.removeItem('admin_pw'); setPw(null) }
 
-  const deleteItem = (catId: string, itemId: string) => {
-    if (!menuData || !confirm('წაიშალოს?')) return
-    const updated = {
-      ...menuData,
-      categories: menuData.categories.map((c) =>
-        c.id === catId ? { ...c, items: c.items.filter((i) => i.id !== itemId) } : c
-      ),
-    }
-    setMenuData(updated)
-    saveMenu(updated)
-  }
-
-  if (!authed) return <LoginForm onLogin={() => setAuthed(true)} />
-  if (!menuData) return <div className="min-h-screen flex items-center justify-center text-cream/50">იტვირთება...</div>
+  if (!pw) return <LoginForm onLogin={setPw} />
+  if (!content || !menuData) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-cream/40 text-sm animate-pulse">იტვირთება...</div>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h1 className="text-3xl font-serif text-cream">Admin Panel</h1>
-            <p className="text-cream/40 text-sm mt-1">მენიუს მართვა</p>
-          </div>
-          {saveMsg && (
-            <div className={`text-sm px-4 py-2 border ${saveMsg.includes('!') && !saveMsg.includes('შეც') ? 'text-green-400 border-green-800' : 'text-red-400 border-red-800'}`}>
-              {saveMsg}
-            </div>
-          )}
-        </div>
-
-        {menuData.categories.map((cat) => (
-          <div key={cat.id} className="mb-10">
-            <div className="flex items-center gap-4 mb-4">
-              <h2 className="text-xl font-serif text-gold">{cat.name}</h2>
-              <span className="text-cream/30 text-sm italic">{cat.nameIt}</span>
-              <div className="flex-1 h-px bg-dark-border" />
-              <button
-                onClick={() => setEditingItem({ catId: cat.id, item: {} })}
-                className="btn-outline text-xs py-1.5 px-4 flex items-center gap-2"
-              >
-                <Plus size={14} /> კერძის დამატება
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {cat.items.map((item) => (
-                <div key={item.id}>
-                  {editingItem?.catId === cat.id && editingItem.item.id === item.id ? (
-                    <ItemEditor
-                      item={editingItem.item}
-                      onSave={(updated) => addItem(cat.id, updated)}
-                      onCancel={() => setEditingItem(null)}
-                    />
-                  ) : (
-                    <div className="card-dark flex items-center justify-between px-4 py-3 gap-4">
-                      <div className="flex-1 min-w-0">
-                        <span className="text-cream text-sm font-medium">{item.name}</span>
-                        <span className="text-cream/30 text-xs ml-2 italic">{item.nameIt}</span>
-                        {item.badge && (
-                          <span className="ml-2 text-xs text-gold/60">[{item.badge}]</span>
-                        )}
-                        <p className="text-cream/40 text-xs truncate">{item.description}</p>
-                      </div>
-                      <div className="text-gold font-serif shrink-0">₾{item.price}</div>
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => setEditingItem({ catId: cat.id, item: item })}
-                          className="text-cream/40 hover:text-gold p-1 transition-colors"
-                        >
-                          <Edit3 size={15} />
-                        </button>
-                        <button
-                          onClick={() => deleteItem(cat.id, item.id)}
-                          className="text-cream/40 hover:text-red-400 p-1 transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {editingItem?.catId === cat.id && !editingItem.item.id && (
-                <ItemEditor
-                  item={editingItem.item}
-                  onSave={(newItem) => addItem(cat.id, newItem)}
-                  onCancel={() => setEditingItem(null)}
-                />
-              )}
-            </div>
-          </div>
-        ))}
-
-        <button
-          onClick={() => { sessionStorage.removeItem('admin_auth'); setAuthed(false) }}
-          className="text-cream/30 hover:text-cream/60 text-sm transition-colors mt-8"
-        >
-          გამოსვლა
+    <div className="min-h-screen bg-dark">
+      {/* Top bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-dark-card border-b border-dark-border h-16 flex items-center px-6 gap-4">
+        <LayoutDashboard size={18} className="text-gold" />
+        <span className="font-serif text-gold text-lg tracking-wider">Admin Panel</span>
+        <div className="flex-1" />
+        <a href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-cream/40 hover:text-cream/70 text-xs transition-colors">
+          <ExternalLink size={13} /> საიტი
+        </a>
+        <button onClick={logout} className="flex items-center gap-1.5 text-cream/40 hover:text-red-400 text-xs transition-colors">
+          <LogOut size={13} /> გამოსვლა
         </button>
+      </div>
+
+      <div className="flex pt-16 min-h-screen">
+        {/* Sidebar */}
+        <aside className="w-48 shrink-0 fixed left-0 top-16 bottom-0 bg-dark-card border-r border-dark-border overflow-y-auto">
+          <nav className="p-3 space-y-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-gold/10 text-gold border-l-2 border-gold'
+                    : 'text-cream/50 hover:text-cream/80 hover:bg-white/5 border-l-2 border-transparent'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Content */}
+        <main className="flex-1 ml-48 p-8 max-w-3xl">
+          <div className="mb-8">
+            <h2 className="text-2xl font-serif text-cream">
+              {TABS.find((t) => t.id === activeTab)?.label}
+            </h2>
+            <div className="w-10 h-px bg-gold mt-2" />
+          </div>
+
+          {activeTab === 'site' && (
+            <TabSite data={content.site} onSave={(site) => saveContent({ site })} />
+          )}
+          {activeTab === 'hero' && (
+            <TabHero data={content.hero} onSave={(hero) => saveContent({ hero })} />
+          )}
+          {activeTab === 'about' && (
+            <TabAbout
+              about={content.about}
+              cta={content.cta}
+              onSave={(about, cta) => saveContent({ about, cta })}
+            />
+          )}
+          {activeTab === 'gallery' && (
+            <TabGallery data={content.gallery} onSave={(gallery) => saveContent({ gallery })} />
+          )}
+          {activeTab === 'menu' && (
+            <TabMenu data={menuData.categories} onSave={saveMenu} />
+          )}
+          {activeTab === 'testimonials' && (
+            <TabTestimonials data={content.testimonials} onSave={(testimonials) => saveContent({ testimonials })} />
+          )}
+          {activeTab === 'contact' && (
+            <TabContact data={content.contact} onSave={(contact) => saveContent({ contact })} />
+          )}
+        </main>
       </div>
     </div>
   )

@@ -1,29 +1,15 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
-
-const info = [
-  {
-    icon: MapPin,
-    title: 'მისამართი',
-    lines: ['რუსთაველის გამზ. 12', 'თბილისი, საქართველო'],
-  },
-  {
-    icon: Phone,
-    title: 'ტელეფონი',
-    lines: ['+995 322 123 456', '+995 599 123 456'],
-  },
-  {
-    icon: Mail,
-    title: 'ელ. ფოსტა',
-    lines: ['info@antico.ge', 'reservations@antico.ge'],
-  },
-  {
-    icon: Clock,
-    title: 'სამუშაო საათები',
-    lines: ['ორშ–პარ: 12:00–23:00', 'შაბ–კვი: 12:00–00:00'],
-  },
-]
+import content from '@/data/content.json'
 
 export default function ContactPage() {
+  const c = content.contact
+  const info = [
+    { icon: MapPin, title: 'მისამართი', lines: [c.address] },
+    { icon: Phone, title: 'ტელეფონი', lines: [c.phone1, c.phone2] },
+    { icon: Mail, title: 'ელ. ფოსტა', lines: [c.email1, c.email2] },
+    { icon: Clock, title: 'სამუშაო საათები', lines: [c.weekdays, c.weekends] },
+  ]
+
   return (
     <>
       <section className="pt-40 pb-20 px-6 text-center bg-dark-card border-b border-dark-border">
@@ -51,17 +37,11 @@ export default function ContactPage() {
             ))}
           </div>
 
-          {/* Map placeholder */}
           <div className="w-full h-80 bg-dark-card border border-dark-border flex items-center justify-center">
             <div className="text-center">
               <MapPin size={32} className="text-gold mx-auto mb-3" />
-              <p className="text-cream/40 text-sm">რუსთაველის გამზ. 12, თბილისი</p>
-              <a
-                href="https://maps.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-outline text-xs py-2 px-5 mt-4 inline-block"
-              >
+              <p className="text-cream/40 text-sm">{c.address}</p>
+              <a href={c.mapUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs py-2 px-5 mt-4 inline-block">
                 Google Maps-ზე ნახვა
               </a>
             </div>
