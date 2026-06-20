@@ -5,7 +5,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="admin-layout">
+    <div className="fixed inset-0 z-[200] bg-dark overflow-auto">
       {children}
     </div>
   )
