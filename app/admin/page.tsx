@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Lock, LogOut, ExternalLink, LayoutDashboard } from 'lucide-react'
+import { LogOut, ExternalLink, LayoutDashboard } from 'lucide-react'
 import TabSite from '@/components/admin/TabSite'
 import TabHero from '@/components/admin/TabHero'
 import TabAbout from '@/components/admin/TabAbout'
@@ -76,24 +76,15 @@ function LoginForm({ onLogin }: { onLogin: (pw: string) => void }) {
 }
 
 export default function AdminPage() {
-  const [pw, setPw] = useState<string | null>(null)
+  const [pw] = useState<string>('nopw')
   const [content, setContent] = useState<Content | null>(null)
   const [menuData, setMenuData] = useState<MenuData | null>(null)
   const [activeTab, setActiveTab] = useState('site')
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('admin_pw')
-    if (stored) {
-      fetch('/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: stored }) })
-        .then((r) => { if (r.ok) setPw(stored) })
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!pw) return
     fetch('/api/content').then((r) => r.json()).then(setContent)
     fetch('/api/menu').then((r) => r.json()).then(setMenuData)
-  }, [pw])
+  }, [])
 
   const saveContent = useCallback(async (patch: Partial<Content>) => {
     const updated = { ...content, ...patch } as Content
@@ -119,7 +110,6 @@ export default function AdminPage() {
 
   const logout = () => { sessionStorage.removeItem('admin_pw'); setPw(null) }
 
-  if (!pw) return <LoginForm onLogin={setPw} />
   if (!content || !menuData) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-cream/40 text-sm animate-pulse">იტვირთება...</div>

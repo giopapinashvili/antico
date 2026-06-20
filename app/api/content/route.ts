@@ -14,10 +14,6 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const password = req.headers.get('x-admin-password')
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
   try {
     const body = await req.json()
     writeFileSync(contentPath, JSON.stringify(body, null, 2), 'utf-8')
