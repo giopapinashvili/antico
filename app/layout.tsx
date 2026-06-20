@@ -1,25 +1,13 @@
 import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import './globals.css'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Lounge Antico — Restaurant',
-  description: 'Lounge Antico — იტალიური სამზარეულო ქართული სტუმართმოყვარეობით. ჯავშნები, მენიუ, გალერეა.',
-  icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
-  },
+  description: 'Lounge Antico — Italian cuisine with Georgian hospitality.',
+  icons: { icon: '/logo.png', apple: '/logo.png' },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="ka">
-      <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-      </body>
-    </html>
-  )
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return children
 }

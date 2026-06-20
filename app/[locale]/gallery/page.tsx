@@ -1,19 +1,19 @@
 import Image from 'next/image'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import content from '@/data/content.json'
 
 export default function GalleryPage() {
+  const t = useTranslations('gallery')
   const photos = content.gallery
 
   return (
     <>
       <section className="pt-40 pb-20 px-6 text-center bg-dark-card border-b border-dark-border">
-        <p className="section-subtitle">Antico Restaurant</p>
-        <h1 className="section-title">გალერეა</h1>
+        <p className="section-subtitle">{t('badge')}</p>
+        <h1 className="section-title">{t('title')}</h1>
         <div className="gold-divider" />
-        <p className="text-cream/60 max-w-lg mx-auto text-sm">
-          ჩვენი ატმოსფერო, კერძები და განუმეორებელი მომენტები.
-        </p>
+        <p className="text-cream/60 max-w-lg mx-auto text-sm">{t('subtitle')}</p>
       </section>
 
       <section className="py-20 px-6">
@@ -41,10 +41,10 @@ export default function GalleryPage() {
       </section>
 
       <section className="py-20 px-6 bg-dark-card border-t border-dark-border text-center">
-        <p className="section-subtitle">განიცადე ჩვენთან</p>
-        <h2 className="text-3xl font-serif text-cream mb-6">მოგვიყეთ სტუმრად</h2>
+        <p className="section-subtitle">{t('ctaSubtitle')}</p>
+        <h2 className="text-3xl font-serif text-cream mb-6">{t('ctaTitle')}</h2>
         <div className="gold-divider" />
-        <Link href="/reservation" className="btn-primary">მაგიდის ჯავშანი</Link>
+        <Link href="/reservation" className="btn-primary">{t('ctaBtn')}</Link>
       </section>
     </>
   )

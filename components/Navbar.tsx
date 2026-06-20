@@ -1,27 +1,37 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
+import { useParams } from 'next/navigation'
 
-const links = [
-  { href: '/', label: 'მთავარი' },
-  { href: '/menu', label: 'მენიუ' },
-  { href: '/gallery', label: 'გალერეა' },
-  { href: '/reservation', label: 'ჯავშანი' },
-  { href: '/contact', label: 'კონტაქტი' },
-]
+const locales = ['ka', 'en', 'ru'] as const
+const localeLabels: Record<string, string> = { ka: 'ქარ', en: 'ENG', ru: 'РУС' }
 
 export default function Navbar() {
+  const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const params = useParams()
+  const currentLocale = (params?.locale as string) || 'ka'
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
   }, [])
+
+  const links = [
+    { href: '/' as const, label: t('home') },
+    { href: '/menu' as const, label: t('menu') },
+    { href: '/gallery' as const, label: t('gallery') },
+    { href: '/reservation' as const, label: t('reservation') },
+    { href: '/contact' as const, label: t('contact') },
+  ]
 
   return (
     <header
@@ -54,15 +64,31 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-10">
+        <nav className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="nav-link">
               {l.label}
             </Link>
           ))}
           <Link href="/reservation" className="btn-primary text-xs py-2 px-6">
-            ჯავშანი
+            {t('bookTable')}
           </Link>
+          {/* Language switcher */}
+          <div className="flex items-center gap-1 border-l border-dark-border pl-6">
+            {locales.map((locale) => (
+              <button
+                key={locale}
+                onClick={() => router.replace(pathname, { locale })}
+                className={`text-xs tracking-wider px-2 py-1 transition-colors duration-200 ${
+                  currentLocale === locale
+                    ? 'text-gold'
+                    : 'text-cream/40 hover:text-cream/70'
+                }`}
+              >
+                {localeLabels[locale]}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Mobile toggle */}
@@ -88,6 +114,21 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          <div className="flex items-center gap-3 px-6 py-4">
+            {locales.map((locale) => (
+              <button
+                key={locale}
+                onClick={() => { router.replace(pathname, { locale }); setOpen(false) }}
+                className={`text-sm tracking-wider px-3 py-1 border transition-colors duration-200 ${
+                  currentLocale === locale
+                    ? 'border-gold text-gold'
+                    : 'border-dark-border text-cream/40 hover:border-gold/40 hover:text-cream/70'
+                }`}
+              >
+                {localeLabels[locale]}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </header>

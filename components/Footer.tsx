@@ -1,10 +1,20 @@
-import Link from 'next/link'
 import Image from 'next/image'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import content from '@/data/content.json'
 
 export default function Footer() {
+  const t = useTranslations('nav')
+  const tf = useTranslations('footer')
   const { site, contact } = content
+
+  const navLinks = [
+    { href: '/menu' as const, label: t('menu') },
+    { href: '/gallery' as const, label: t('gallery') },
+    { href: '/reservation' as const, label: t('reservation') },
+    { href: '/contact' as const, label: t('contact') },
+  ]
 
   return (
     <footer className="bg-dark-card border-t border-dark-border mt-0">
@@ -37,14 +47,9 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-xs tracking-[0.3em] uppercase text-gold mb-6">ნავიგაცია</h4>
+            <h4 className="text-xs tracking-[0.3em] uppercase text-gold mb-6">{tf('navTitle')}</h4>
             <ul className="space-y-3">
-              {[
-                { href: '/menu', label: 'მენიუ' },
-                { href: '/gallery', label: 'გალერეა' },
-                { href: '/reservation', label: 'ჯავშანი' },
-                { href: '/contact', label: 'კონტაქტი' },
-              ].map((l) => (
+              {navLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="text-cream/60 hover:text-gold text-sm transition-colors duration-200">
                     {l.label}
@@ -55,7 +60,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-xs tracking-[0.3em] uppercase text-gold mb-6">კონტაქტი</h4>
+            <h4 className="text-xs tracking-[0.3em] uppercase text-gold mb-6">{t('contact')}</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-cream/60 text-sm">
                 <MapPin size={16} className="text-gold mt-0.5 shrink-0" />

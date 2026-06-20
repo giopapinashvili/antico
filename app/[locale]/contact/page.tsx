@@ -1,24 +1,25 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import content from '@/data/content.json'
 
 export default function ContactPage() {
+  const t = useTranslations('contact')
   const c = content.contact
+
   const info = [
-    { icon: MapPin, title: 'მისამართი', lines: [c.address] },
-    { icon: Phone, title: 'ტელეფონი', lines: [c.phone1, c.phone2] },
-    { icon: Mail, title: 'ელ. ფოსტა', lines: [c.email1, c.email2] },
-    { icon: Clock, title: 'სამუშაო საათები', lines: [c.weekdays, c.weekends] },
+    { icon: MapPin, title: t('addressLabel'), lines: [c.address] },
+    { icon: Phone, title: t('phoneLabel'), lines: [c.phone1, c.phone2] },
+    { icon: Mail, title: t('emailLabel'), lines: [c.email1, c.email2] },
+    { icon: Clock, title: t('hoursLabel'), lines: [c.weekdays, c.weekends] },
   ]
 
   return (
     <>
       <section className="pt-40 pb-20 px-6 text-center bg-dark-card border-b border-dark-border">
-        <p className="section-subtitle">Antico Restaurant</p>
-        <h1 className="section-title">კონტაქტი</h1>
+        <p className="section-subtitle">{t('badge')}</p>
+        <h1 className="section-title">{t('title')}</h1>
         <div className="gold-divider" />
-        <p className="text-cream/60 max-w-lg mx-auto text-sm">
-          გვაქვს კითხვები? გვიპოვეთ ან მოგვწერეთ.
-        </p>
+        <p className="text-cream/60 max-w-lg mx-auto text-sm">{t('subtitle')}</p>
       </section>
 
       <section className="py-20 px-6">
@@ -41,8 +42,9 @@ export default function ContactPage() {
             <div className="text-center">
               <MapPin size={32} className="text-gold mx-auto mb-3" />
               <p className="text-cream/40 text-sm">{c.address}</p>
-              <a href={c.mapUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs py-2 px-5 mt-4 inline-block">
-                Google Maps-ზე ნახვა
+              <a href={c.mapUrl} target="_blank" rel="noopener noreferrer"
+                className="btn-outline text-xs py-2 px-5 mt-4 inline-block">
+                {t('mapBtn')}
               </a>
             </div>
           </div>
